@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Upload an image and watch its pixels reassemble into a reference portrait."
+    />
+    <title>mimose</title>
+    <link rel="stylesheet" href="./src/styles/tokens.css" />
+    <link rel="stylesheet" href="./src/styles/app.css" />
+    <script type="module" src="./src/main.js"></script>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="masthead">
+        <a class="wordmark" href="./" aria-label="mimose home">mimose</a>
+        <span class="masthead__note">pixel morph study</span>
+      </header>
+
+      <div class="workspace">
+        <section class="intro" aria-labelledby="intro-title">
+          <p class="eyebrow">Source in, portrait out</p>
+          <h1 id="intro-title">Your image,<br /><em>reassembled.</em></h1>
+          <p class="lede">
+            Upload an image. Its pixels break apart, drift, and settle into one
+            of the reference portraits.
+          </p>
+        </section>
+
+        <section class="upload-card" aria-labelledby="upload-title">
+          <div class="upload-card__header">
+            <h2 id="upload-title">Source image</h2>
+            <span class="upload-card__meta">In-browser</span>
+          </div>
+
+          <div class="dropzone" id="dropzone">
+            <input
+              class="visually-hidden"
+              id="image-input"
+              name="image"
+              type="file"
+              accept="image/*"
+            />
+            <label class="dropzone__label" for="image-input">
+              <span class="dropzone__mark" aria-hidden="true">+</span>
+              <span class="dropzone__title">Drop an image here</span>
+              <span class="dropzone__hint" id="upload-hint">
+                or choose a file · JPEG, PNG, WebP
+              </span>
+            </label>
+
+            <div class="preview" id="preview" hidden>
+              <img class="preview__image" id="preview-image" alt="" />
+              <div class="preview__meta">
+                <p class="preview__name" id="preview-name"></p>
+                <p class="preview__size" id="preview-size"></p>
+              </div>
+              <button class="preview__clear" id="clear-button" type="button">
+                Replace
+              </button>
+            </div>
+          </div>
+
+          <p class="status" id="status" role="status" aria-live="polite">
+            Waiting for an image.
+          </p>
+        </section>
+      </div>
+
+      <footer class="footer">
+        <span>Local only · nothing leaves your browser</span>
+        <span id="reference-status">References loading…</span>
+      </footer>
+    </main>
+  </body>
+</html>
