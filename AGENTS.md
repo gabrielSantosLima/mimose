@@ -57,6 +57,9 @@ git commit -m "feat: short message"
 
 ## Releases
 
+- Publish releases with the `Release` workflow
+  ([.github/workflows/release.yml](.github/workflows/release.yml)). It bumps the
+  version, generates notes, commits, tags, and creates the GitHub release.
 - Use Semantic Versioning and tag releases as `vX.Y.Z`. Pre-releases use a
   suffix such as `vX.Y.Z-alpha.1`.
 - Release commits use `chore(release): vX.Y.Z`.
@@ -66,5 +69,7 @@ git commit -m "feat: short message"
 - Describe user-visible changes. Do not list commits that are not shipped.
 - Publish the release on GitHub with the generated notes. Mark versions with a
   pre-release suffix as pre-releases.
+- Deployment is manual: the site is served from GitHub Pages configured in the
+  repository settings. The workflow does not build or deploy the app.
 - Do not move or delete an existing release tag. Fix the problem with a new
   patch release.
