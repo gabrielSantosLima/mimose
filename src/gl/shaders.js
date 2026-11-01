@@ -86,7 +86,7 @@ out vec4 outColor;
 
 void main() {
   vec4 texel = texture(uTexture, vUv);
-  float flatten = smoothstep(0.8, 1.0, uProgress);
+  float flatten = smoothstep(0.65, 1.0, uProgress);
   vec3 color = mix(texel.rgb, vColor, flatten);
   outColor = vec4(color, texel.a);
 }

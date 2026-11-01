@@ -1,3 +1,5 @@
+import { adaptTileColors } from "./contrast.js";
+
 export function pairTiles(tiles, targets, randomness) {
   if (tiles.length !== targets.length) {
     throw new Error("The source and reference pixel counts do not match.");
@@ -23,8 +25,10 @@ export function pairTiles(tiles, targets, randomness) {
     sortedTargets[swapIndex] = target;
   }
 
-  return sortedTiles.map((tile, index) => ({
+  const pairedTiles = sortedTiles.map((tile, index) => ({
     ...tile,
     target: sortedTargets[index],
   }));
+
+  return adaptTileColors(pairedTiles);
 }
