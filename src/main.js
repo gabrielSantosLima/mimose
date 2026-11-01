@@ -3,13 +3,20 @@ import {
   chooseParticleBudget,
   prefersReducedMotion,
 } from "./config.js";
-import { coverRect, containRect } from "./gl/layout.js";
+import { containRect } from "./gl/layout.js";
 import { createRenderer } from "./gl/renderer.js";
 import { decodeImageFile } from "./image/decode.js";
 import { buildSourceTiles } from "./image/source-tiles.js";
 import { pairTiles } from "./particles/pair.js";
 import { createTimeline, progressAt } from "./particles/timeline.js";
 import { analyzeReference, sampleTargets } from "./reference/analyze.js";
+import {
+  applyTranslations,
+  getLanguage,
+  initI18n,
+  setLanguage,
+  t,
+} from "./i18n.js";
 import {
   loadManifest,
   loadReferenceBitmap,
@@ -34,6 +41,10 @@ const stageClose = document.querySelector("#stage-close");
 const replayButton = document.querySelector("#replay-button");
 const stageStatus = document.querySelector("#stage-status");
 const stageReference = document.querySelector("#stage-reference");
+const settings = document.querySelector("#settings");
+const settingsToggle = document.querySelector("#settings-toggle");
+const settingsPanel = document.querySelector("#settings-panel");
+const languageSelect = document.querySelector("#language-select");
 
 let previewUrl = null;
 let manifest = [];
@@ -42,12 +53,21 @@ let activeRun = null;
 let requestId = 0;
 let resizeFrame = 0;
 let fallbackTimer = 0;
+let statusState = { key: "upload.waiting", tone: "idle", params: {} };
+let referenceState = { key: "footer.referencesLoading", params: {} };
+let stageStatusKey = "stage.breaking";
 const referenceCache = new Map();
 
 init();
 
 async function init() {
+  initI18n();
+  setupSettings();
   setupUpload();
+  languageSelect.value = getLanguage();
+  applyTranslations();
+  refreshDynamicCopy();
+
   stageClose.addEventListener("click", closeStage);
   replayButton.addEventListener("click", replay);
   window.addEventListener("resize", handleResize);
@@ -58,10 +78,52 @@ async function init() {
 
   try {
     manifest = await loadManifest();
-    referenceStatus.textContent = `${manifest.length} references ready`;
+    setReferenceStatus("footer.referencesReady", { count: manifest.length });
   } catch (error) {
     console.error(error);
-    referenceStatus.textContent = "References unavailable";
+    setReferenceStatus("footer.referencesUnavailable");
+  }
+}
+
+function setupSettings() {
+  settingsToggle.addEventListener("click", () => {
+    setSettingsOpen(settingsPanel.hidden);
+  });
+
+  languageSelect.addEventListener("change", () => {
+    setLanguage(languageSelect.value);
+    applyTranslations();
+    refreshDynamicCopy();
+    setSettingsOpen(false);
+  });
+
+  document.addEventListener("click", (event) => {
+    if (settingsPanel.hidden || settings.contains(event.target)) return;
+    setSettingsOpen(false);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || settingsPanel.hidden) return;
+    setSettingsOpen(false);
+    settingsToggle.focus();
+  });
+}
+
+function setSettingsOpen(open) {
+  settingsPanel.hidden = !open;
+  settingsToggle.setAttribute("aria-expanded", String(open));
+}
+
+function refreshDynamicCopy() {
+  status.textContent = t(statusState.key, statusState.params);
+  status.dataset.tone = statusState.tone;
+  referenceStatus.textContent = t(referenceState.key, referenceState.params);
+
+  if (!stage.hidden) {
+    stageStatus.textContent = t(stageStatusKey);
+    if (stageReference.dataset.revealed !== "true") {
+      stageReference.textContent = t("stage.suspense");
+    }
   }
 }
 
@@ -98,23 +160,23 @@ async function handleFile(file) {
   if (!file) return;
 
   if (file.type && !file.type.startsWith("image/")) {
-    setStatus("Please choose an image file.", "error");
+    setStatus("status.fileType", "error");
     return;
   }
 
   if (file.size > APP_CONFIG.maxFileSize) {
-    setStatus("That image is too large. Try one under 25 MB.", "error");
+    setStatus("status.tooLarge", "error");
     return;
   }
 
   const token = ++requestId;
   showPreview(file);
-  setStatus("Preparing the morph…", "ready");
+  setStatus("upload.preparing", "ready");
 
   try {
     if (manifest.length === 0) {
       manifest = await loadManifest();
-      referenceStatus.textContent = `${manifest.length} references ready`;
+      setReferenceStatus("footer.referencesReady", { count: manifest.length });
     }
 
     const referenceName = pickReference(manifest, lastReference);
@@ -154,10 +216,7 @@ async function handleFile(file) {
   } catch (error) {
     if (token !== requestId) return;
     console.error(error);
-    setStatus(
-      error.message || "Something went wrong. Try another image.",
-      "error"
-    );
+    setStatus("status.error", "error");
   }
 }
 
@@ -176,6 +235,7 @@ function showPreview(file) {
 function openStage(data) {
   disposeRun();
   clearTimeout(fallbackTimer);
+  setSettingsOpen(false);
 
   stage.hidden = false;
   stageCanvas.hidden = false;
@@ -183,9 +243,8 @@ function openStage(data) {
   stageFallback.replaceChildren();
   document.body.classList.add("is-morphing");
   pageMain.inert = true;
-  stageReference.textContent = "your image became....";
-  stageReference.dataset.revealed = "false";
-  stageStatus.textContent = "Breaking the image apart…";
+  setStageSuspense();
+  setStageStatus("stage.breaking");
   replayButton.hidden = true;
   stageClose.focus({ preventScroll: true });
 
@@ -234,9 +293,8 @@ function startAnimation(run) {
   run.finished = false;
   run.renderer.setMotion(reducedMotion ? 0 : 1);
   replayButton.hidden = true;
-  stageReference.textContent = "your image became....";
-  stageReference.dataset.revealed = "false";
-  stageStatus.textContent = "Breaking the image apart…";
+  setStageSuspense();
+  setStageStatus("stage.breaking");
   run.renderer.render(0, 0);
 
   const tick = (now) => {
@@ -252,8 +310,7 @@ function startAnimation(run) {
     } else {
       run.finished = true;
       replayButton.hidden = false;
-      stageReference.textContent = displayReferenceName(run.referenceName);
-      stageReference.dataset.revealed = "true";
+      revealReference(run.referenceName);
     }
   };
 
@@ -261,21 +318,19 @@ function startAnimation(run) {
 }
 
 function updateStageStatus(progress) {
-  let message;
+  let key;
 
   if (progress === 0) {
-    message = "Breaking the image apart…";
+    key = "stage.breaking";
   } else if (progress < 0.55) {
-    message = "Drifting through the pixels…";
+    key = "stage.drifting";
   } else if (progress < 1) {
-    message = "Reassembling the portrait…";
+    key = "stage.reassembling";
   } else {
-    message = "Settled.";
+    key = "stage.settled";
   }
 
-  if (stageStatus.textContent !== message) {
-    stageStatus.textContent = message;
-  }
+  if (stageStatusKey !== key) setStageStatus(key);
 }
 
 function resizeStage(run) {
@@ -292,7 +347,7 @@ function resizeStage(run) {
 function updateLayout(run) {
   const width = window.innerWidth;
   const height = window.innerHeight;
-  const sourceRect = coverRect(run.width, run.height, width, height);
+  const sourceRect = containRect(run.width, run.height, width, height);
   const targetRect = containRect(
     run.referenceWidth,
     run.referenceHeight,
@@ -334,8 +389,8 @@ function handleContextLost(event) {
   if (!activeRun) return;
 
   disposeRun();
-  stageStatus.textContent = "The graphics context was lost. Try again.";
-  setStatus("The graphics context was lost. Try another image.", "error");
+  setStageStatus("stage.contextLost");
+  setStatus("stage.contextLostStatus", "error");
 }
 
 function replay() {
@@ -370,7 +425,7 @@ function resetUpload() {
   input.value = "";
   preview.hidden = true;
   dropzone.classList.remove("is-filled");
-  setStatus("Waiting for an image.");
+  setStatus("upload.waiting");
   input.focus({ preventScroll: true });
 }
 
@@ -390,8 +445,7 @@ function showFallback(data) {
   target.alt = `Reference ${stripExtension(data.referenceName)}`;
 
   stageFallback.append(source, target);
-  stageStatus.textContent =
-    "WebGL2 is unavailable — showing a simple crossfade.";
+  setStageStatus("stage.fallback");
 
   requestAnimationFrame(() => {
     target.classList.add("is-visible");
@@ -400,15 +454,35 @@ function showFallback(data) {
   fallbackTimer = window.setTimeout(() => {
     if (stage.hidden || stageFallback.hidden) return;
 
-    stageReference.textContent = displayReferenceName(data.referenceName);
-    stageReference.dataset.revealed = "true";
-    stageStatus.textContent = "Settled.";
+    revealReference(data.referenceName);
+    setStageStatus("stage.settled");
   }, 1900);
 }
 
-function setStatus(message, tone = "idle") {
-  status.textContent = message;
+function setStatus(key, tone = "idle", params = {}) {
+  statusState = { key, tone, params };
+  status.textContent = t(key, params);
   status.dataset.tone = tone;
+}
+
+function setReferenceStatus(key, params = {}) {
+  referenceState = { key, params };
+  referenceStatus.textContent = t(key, params);
+}
+
+function setStageStatus(key) {
+  stageStatusKey = key;
+  stageStatus.textContent = t(key);
+}
+
+function setStageSuspense() {
+  stageReference.textContent = t("stage.suspense");
+  stageReference.dataset.revealed = "false";
+}
+
+function revealReference(name) {
+  stageReference.textContent = displayReferenceName(name);
+  stageReference.dataset.revealed = "true";
 }
 
 function stripExtension(name) {

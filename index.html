@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
+      id="meta-description"
       name="description"
       content="Upload an image and watch its pixels reassemble into a reference portrait."
     />
@@ -16,14 +17,67 @@
     <main class="shell">
       <header class="masthead">
         <a class="wordmark" href="./" aria-label="mimose home">mimose</a>
-        <span class="masthead__note">pixel morph study</span>
+        <div class="masthead__tools">
+          <span class="masthead__note" data-i18n="masthead.note">
+            pixel morph study
+          </span>
+          <div class="settings" id="settings">
+            <button
+              class="settings__toggle"
+              id="settings-toggle"
+              type="button"
+              aria-label="Language settings"
+              aria-haspopup="true"
+              aria-expanded="false"
+              aria-controls="settings-panel"
+              data-i18n-aria-label="settings.aria"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <circle cx="12" cy="12" r="3"></circle>
+                <path
+                  d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"
+                ></path>
+              </svg>
+            </button>
+            <div class="settings__panel" id="settings-panel" hidden>
+              <label
+                class="settings__label"
+                for="language-select"
+                data-i18n="settings.label"
+              >
+                Language
+              </label>
+              <select class="settings__select" id="language-select">
+                <option value="en">English</option>
+                <option value="pt-BR">Português (Brasil)</option>
+                <option value="es">Español</option>
+              </select>
+            </div>
+          </div>
+        </div>
       </header>
 
       <div class="workspace">
         <section class="intro" aria-labelledby="intro-title">
-          <p class="eyebrow">Source in, portrait out</p>
-          <h1 id="intro-title">Your image,<br /><em>reassembled.</em></h1>
-          <p class="lede">
+          <p class="eyebrow" data-i18n="intro.eyebrow">
+            Source in, portrait out
+          </p>
+          <h1 id="intro-title">
+            <span data-i18n="intro.titleLine1">Your image,</span><br />
+            <em data-i18n="intro.titleLine2">reassembled.</em>
+          </h1>
+          <p class="lede" data-i18n="intro.lede">
             Upload an image. Its pixels break apart, drift, and settle into one
             of the reference portraits.
           </p>
@@ -31,8 +85,10 @@
 
         <section class="upload-card" aria-labelledby="upload-title">
           <div class="upload-card__header">
-            <h2 id="upload-title">Source image</h2>
-            <span class="upload-card__meta">In-browser</span>
+            <h2 id="upload-title" data-i18n="upload.title">Source image</h2>
+            <span class="upload-card__meta" data-i18n="upload.meta">
+              In-browser
+            </span>
           </div>
 
           <div class="dropzone" id="dropzone">
@@ -45,8 +101,14 @@
             />
             <label class="dropzone__label" for="image-input">
               <span class="dropzone__mark" aria-hidden="true">+</span>
-              <span class="dropzone__title">Drop an image here</span>
-              <span class="dropzone__hint" id="upload-hint">
+              <span class="dropzone__title" data-i18n="upload.dropTitle">
+                Drop an image here
+              </span>
+              <span
+                class="dropzone__hint"
+                id="upload-hint"
+                data-i18n="upload.dropHint"
+              >
                 or choose a file · JPEG, PNG, WebP
               </span>
             </label>
@@ -57,7 +119,12 @@
                 <p class="preview__name" id="preview-name"></p>
                 <p class="preview__size" id="preview-size"></p>
               </div>
-              <button class="preview__clear" id="clear-button" type="button">
+              <button
+                class="preview__clear"
+                id="clear-button"
+                type="button"
+                data-i18n="upload.replace"
+              >
                 Replace
               </button>
             </div>
@@ -70,7 +137,9 @@
       </div>
 
       <footer class="footer">
-        <span>Local only · nothing leaves your browser</span>
+        <span data-i18n="footer.local">
+          Local only · nothing leaves your browser
+        </span>
         <span id="reference-status">References loading…</span>
       </footer>
     </main>
@@ -81,6 +150,7 @@
       role="dialog"
       aria-modal="true"
       aria-label="Pixel morph"
+      data-i18n-aria-label="stage.label"
       hidden
     >
       <canvas class="stage__canvas" id="stage-canvas"></canvas>
@@ -89,13 +159,20 @@
       <header class="stage__top">
         <span class="wordmark">mimose</span>
         <div class="stage__actions">
-          <button class="stage__button" id="replay-button" type="button" hidden>
+          <button
+            class="stage__button"
+            id="replay-button"
+            type="button"
+            data-i18n="stage.replay"
+            hidden
+          >
             Replay
           </button>
           <button
             class="stage__button stage__button--accent"
             id="stage-close"
             type="button"
+            data-i18n="stage.newImage"
           >
             New image
           </button>

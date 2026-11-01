@@ -34,8 +34,10 @@ files for deployment.
 
 ## Language rules
 
-- All code, identifiers, comments, commit messages, UI labels and user-facing
-  strings MUST be written in English.
+- All code, identifiers, comments and commit messages MUST be written in
+  English.
+- User-facing strings live in `src/i18n.js` under `en`, `pt-BR` and `es`.
+  English is the default and fallback. Keep all three locales in sync.
 - Keep commit messages short and follow Conventional Commits
   (`feat: ...`, `fix: ...`, `refactor: ...`, `chore: ...`).
 
