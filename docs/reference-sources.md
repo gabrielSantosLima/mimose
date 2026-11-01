@@ -10,3 +10,8 @@ copyrighted by their respective owners. Review licenses before publishing.
 | alisa-meu-pelo.png | local: Downloads/alisa-meu-pelo.webp | — | User-provided |
 | shrek.png | local: Downloads/shrek.jpg | — | User-provided |
 | galo-cego.png | local: Downloads/galo-cego.jpeg | — | User-provided |
+| acorda-cara-monark.png | local: Downloads/ACORDA CARA MONARK.webp | — | User-provided |
+| epaminondass.png | local: Downloads/epaminondass.jpg | — | User-provided |
+| monalisa.png | local: Downloads/monalisa.jpg | — | User-provided |
+| thanos.png | local: Downloads/thanos.jpg | — | User-provided |
+| tigre-kung-fu-panda.png | local: Downloads/tigre kung fu panda.jfif | — | User-provided |
