@@ -74,5 +74,38 @@
         <span id="reference-status">References loading…</span>
       </footer>
     </main>
+
+    <section
+      class="stage"
+      id="stage"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Pixel morph"
+      hidden
+    >
+      <canvas class="stage__canvas" id="stage-canvas"></canvas>
+      <div class="stage__fallback" id="stage-fallback" hidden></div>
+
+      <header class="stage__top">
+        <span class="wordmark">mimose</span>
+        <div class="stage__actions">
+          <button class="stage__button" id="replay-button" type="button" hidden>
+            Replay
+          </button>
+          <button
+            class="stage__button stage__button--accent"
+            id="stage-close"
+            type="button"
+          >
+            New image
+          </button>
+        </div>
+      </header>
+
+      <footer class="stage__bottom">
+        <p class="stage__status" id="stage-status" aria-live="polite"></p>
+        <span class="stage__reference" id="stage-reference"></span>
+      </footer>
+    </section>
   </body>
 </html>
