@@ -18,4 +18,3 @@ copyrighted by their respective owners. Review licenses before publishing.
 | alisa-meu-pelo.png | local: Downloads/alisa-meu-pelo.webp | — | User-provided |
 | shrek.png | local: Downloads/shrek.jpg | — | User-provided |
 | galo-cego.png | local: Downloads/galo-cego.jpeg | — | User-provided |
-| nove-e-dez.png | local: Downloads/nove-e-dez.jfif | — | User-provided |
