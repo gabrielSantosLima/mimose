@@ -25,38 +25,45 @@ export function buildSourceTiles(image, budget) {
     throw new Error("The image pixels could not be read.");
   }
 
-  const tilePx = Math.max(
-    2,
-    Math.ceil(Math.sqrt((canvas.width * canvas.height) / budget))
+  const targetCount = Math.max(1, budget || 60000);
+  const tileSize = Math.sqrt(
+    (canvas.width * canvas.height) / targetCount
   );
-  const columns = Math.ceil(canvas.width / tilePx);
-  const rows = Math.ceil(canvas.height / tilePx);
+  const columns = Math.max(1, Math.round(canvas.width / tileSize));
+  const rows = Math.max(1, Math.round(canvas.height / tileSize));
+  const tileWidth = canvas.width / columns;
+  const tileHeight = canvas.height / rows;
   const tiles = [];
 
   for (let row = 0; row < rows; row += 1) {
     for (let column = 0; column < columns; column += 1) {
-      const x0 = column * tilePx;
-      const y0 = row * tilePx;
-      const x1 = Math.min(x0 + tilePx, canvas.width);
-      const y1 = Math.min(y0 + tilePx, canvas.height);
+      const x0 = column * tileWidth;
+      const y0 = row * tileHeight;
+      const x1 = x0 + tileWidth;
+      const y1 = y0 + tileHeight;
 
-      const average = averageTile(pixels.data, canvas.width, x0, y0, x1, y1);
+      const average = averageTile(
+        pixels.data,
+        canvas.width,
+        canvas.height,
+        x0,
+        y0,
+        x1,
+        y1
+      );
       if (!average) continue;
 
       const [red, green, blue, alpha] = average;
       tiles.push({
-        srcX: (x0 + (x1 - x0) / 2) / canvas.width,
-        srcY: (y0 + (y1 - y0) / 2) / canvas.height,
+        srcX: (column + 0.5) / columns,
+        srcY: (row + 0.5) / rows,
         rect: [
-          x0 / canvas.width,
-          y0 / canvas.height,
-          x1 / canvas.width,
-          y1 / canvas.height,
+          column / columns,
+          row / rows,
+          (column + 1) / columns,
+          (row + 1) / rows,
         ],
-        srcSize: [
-          (x1 - x0) / canvas.width,
-          (y1 - y0) / canvas.height,
-        ],
+        srcSize: [1 / columns, 1 / rows],
         color: [red / 255, green / 255, blue / 255],
         alpha,
         luminance:
@@ -74,39 +81,52 @@ export function buildSourceTiles(image, budget) {
     canvas,
     width: canvas.width,
     height: canvas.height,
-    tilePx,
     columns,
     rows,
+    tileWidth,
+    tileHeight,
     tiles,
   };
 }
 
-function averageTile(data, width, x0, y0, x1, y1) {
+function averageTile(data, width, height, x0, y0, x1, y1) {
+  const startX = Math.max(0, Math.floor(x0));
+  const endX = Math.min(width, Math.ceil(x1));
+  const startY = Math.max(0, Math.floor(y0));
+  const endY = Math.min(height, Math.ceil(y1));
   let red = 0;
   let green = 0;
   let blue = 0;
   let alpha = 0;
-  let count = 0;
+  let totalWeight = 0;
 
-  for (let y = y0; y < y1; y += 1) {
-    for (let x = x0; x < x1; x += 1) {
+  for (let y = startY; y < endY; y += 1) {
+    const overlapY = Math.min(y + 1, y1) - Math.max(y, y0);
+    if (overlapY <= 0) continue;
+
+    for (let x = startX; x < endX; x += 1) {
+      const overlapX = Math.min(x + 1, x1) - Math.max(x, x0);
+      if (overlapX <= 0) continue;
+
+      const weight = overlapX * overlapY;
       const index = (y * width + x) * 4;
-      const pixelAlpha = data[index + 3];
+      const pixelAlpha = data[index + 3] / 255;
+      const effectiveWeight = weight * pixelAlpha;
 
-      if (pixelAlpha === 0) {
-        count += 1;
-        continue;
-      }
-
-      red += data[index] * pixelAlpha;
-      green += data[index + 1] * pixelAlpha;
-      blue += data[index + 2] * pixelAlpha;
-      alpha += pixelAlpha;
-      count += 1;
+      totalWeight += weight;
+      alpha += effectiveWeight;
+      red += data[index] * effectiveWeight;
+      green += data[index + 1] * effectiveWeight;
+      blue += data[index + 2] * effectiveWeight;
     }
   }
 
-  if (alpha === 0) return null;
+  if (alpha === 0 || totalWeight === 0) return null;
 
-  return [red / alpha, green / alpha, blue / alpha, alpha / (count * 255)];
+  return [
+    red / alpha,
+    green / alpha,
+    blue / alpha,
+    alpha / totalWeight,
+  ];
 }
