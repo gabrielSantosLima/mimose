@@ -1,13 +1,15 @@
 # mimose
 
 A browser app built with plain HTML, CSS and JavaScript. It uses ES modules and
-has no framework, no bundler and no build step.
+has no framework or bundler. A small Pages build script only stages the static
+files for deployment.
 
 ## Tech stack
 
 - HTML5, CSS and JavaScript (ES modules).
-- No framework and no build step. Keep the app runnable by serving the project
-  directory with any static file server.
+- No framework or bundler. Keep the app runnable by serving the project
+  directory with any static file server. `npm run build:pages` copies the
+  deployable assets into `dist/`; it does not transform code.
 - Prefer browser APIs over third-party libraries. Add a dependency only when it
   clearly earns its place.
 
@@ -69,7 +71,21 @@ git commit -m "feat: short message"
 - Describe user-visible changes. Do not list commits that are not shipped.
 - Publish the release on GitHub with the generated notes. Mark versions with a
   pre-release suffix as pre-releases.
-- Deployment is manual: the site is served from GitHub Pages configured in the
-  repository settings. The workflow does not build or deploy the app.
+- A successful `Release` workflow run triggers the Pages deployment.
 - Do not move or delete an existing release tag. Fix the problem with a new
   patch release.
+
+## Deployment
+
+- The site is deployed to GitHub Pages by
+  [.github/workflows/deploy.yml](.github/workflows/deploy.yml). It runs after a
+  successful `Release` workflow and can also be started manually with
+  `workflow_dispatch`. It checks out the latest published release tag.
+- The repository Pages source must be set to **GitHub Actions**.
+- `npm run build:pages` runs [scripts/build-pages.js](scripts/build-pages.js),
+  which stages `index.html`, `src/`, `reference/`, `assets/`, `public/` and a
+  few root files into `dist/`. Nothing else is published.
+- Do not deploy on every push: releases are the deployment boundary.
+- The site is served from `/mimose/`, not from the domain root. Use relative
+  URLs for scripts, styles, images and fetches so they work both locally and on
+  Pages.

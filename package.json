@@ -5,6 +5,11 @@
   "description": "A web app that transforms an uploaded image into a preloaded reference image.",
   "license": "MIT",
   "scripts": {
+    "build:pages": "node scripts/build-pages.js",
+    "references:convert": "node scripts/convert-references.js",
     "release:notes": "node scripts/release-notes.js"
+  },
+  "devDependencies": {
+    "sharp": "^0.35.5"
   }
 }
