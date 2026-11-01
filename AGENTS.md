@@ -19,6 +19,9 @@ files for deployment.
   `<script type="module" src="...">` in HTML.
 - Keep HTML semantic. Label form controls, preserve keyboard navigation and
   meet WCAG AA contrast.
+- Build and style mobile first. Every page and component must work from small
+  viewports (320px wide and up): use responsive layouts, fluid sizing and media
+  queries, keep tap targets comfortably sized and avoid horizontal scrolling.
 - Keep JavaScript, CSS and markup in separate files. No inline event handlers
   and no inline styles.
 - Define colors, spacing, radius and typography as CSS custom properties on
