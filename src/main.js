@@ -26,15 +26,6 @@ function formatType(type) {
   return type.replace("image/", "").replace("+xml", "").toUpperCase();
 }
 
-function resetPreview() {
-  if (previewUrl) URL.revokeObjectURL(previewUrl);
-  previewUrl = null;
-  input.value = "";
-  preview.hidden = true;
-  dropzone.classList.remove("is-filled");
-  setStatus("Waiting for an image.");
-}
-
 function setPreview(file) {
   if (!file) return;
 
@@ -78,7 +69,7 @@ dropzone.addEventListener("drop", (event) => {
 });
 
 clearButton.addEventListener("click", () => {
-  resetPreview();
+  input.value = "";
   input.click();
 });
 
