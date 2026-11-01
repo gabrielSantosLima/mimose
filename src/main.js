@@ -64,6 +64,7 @@ async function init() {
   initI18n();
   setupSettings();
   setupUpload();
+  setupGlow();
   languageSelect.value = getLanguage();
   applyTranslations();
   refreshDynamicCopy();
@@ -112,6 +113,43 @@ function setupSettings() {
 function setSettingsOpen(open) {
   settingsPanel.hidden = !open;
   settingsToggle.setAttribute("aria-expanded", String(open));
+}
+
+function setupGlow() {
+  const root = document.documentElement;
+  const smoothing = prefersReducedMotion() ? 1 : 0.16;
+  let targetX = 12;
+  let targetY = 8;
+  let currentX = targetX;
+  let currentY = targetY;
+  let frame = 0;
+
+  const tick = () => {
+    frame = 0;
+    currentX += (targetX - currentX) * smoothing;
+    currentY += (targetY - currentY) * smoothing;
+
+    root.style.setProperty("--glow-x", `${currentX.toFixed(3)}%`);
+    root.style.setProperty("--glow-y", `${currentY.toFixed(3)}%`);
+
+    if (
+      Math.abs(targetX - currentX) > 0.01 ||
+      Math.abs(targetY - currentY) > 0.01
+    ) {
+      frame = requestAnimationFrame(tick);
+    }
+  };
+
+  window.addEventListener(
+    "pointermove",
+    (event) => {
+      targetX = (event.clientX / Math.max(1, window.innerWidth)) * 100;
+      targetY = (event.clientY / Math.max(1, window.innerHeight)) * 100;
+
+      if (!frame) frame = requestAnimationFrame(tick);
+    },
+    { passive: true }
+  );
 }
 
 function refreshDynamicCopy() {
